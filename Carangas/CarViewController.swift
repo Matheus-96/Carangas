@@ -6,7 +6,9 @@
 //  Copyright © 2017 Eric Brito. All rights reserved.
 //
 
+import Foundation
 import UIKit
+import WebKit
 
 class CarViewController: UIViewController {
 
@@ -14,6 +16,9 @@ class CarViewController: UIViewController {
     @IBOutlet weak var lbBrand: UILabel!
     @IBOutlet weak var lbGasType: UILabel!
     @IBOutlet weak var lbPrice: UILabel!
+    
+    @IBOutlet weak var webview: WKWebView!
+    @IBOutlet weak var loading: UIActivityIndicatorView!
     
     //MARK: - Properties
     
@@ -30,6 +35,18 @@ class CarViewController: UIViewController {
         lbBrand.text = car.brand
         lbGasType.text = car.gas
         lbPrice.text = "R$ \(car.price)"
+        
+        let name = (title! + "+" + car.brand).replacingOccurrences(of: " ", with: "+")
+        let urlString = "https://www.google.com.br/search?q=\(name)&tbm=isch"
+        let url = URL(string: urlString)
+        let request = URLRequest(url: url!)
+        
+        webview.allowsBackForwardNavigationGestures = true
+        webview.allowsLinkPreview = true
+        webview.navigationDelegate = self
+        webview.uiDelegate = self
+        webview.load(request)
+        
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -37,4 +54,27 @@ class CarViewController: UIViewController {
         vc.car = car
     }
 
+}
+extension CarViewController: WKNavigationDelegate, WKUIDelegate {
+    
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        loading.stopAnimating()
+    }
+    
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        loading.stopAnimating()
+        webview.evaluateJavaScript("alert('Hello World!!')") { (returnObject, error) in
+            print(returnObject)
+        }
+    }
+    
+    func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+        print(message)
+        completionHandler()
+    }
+    
+    
+    
+    
+    
 }
